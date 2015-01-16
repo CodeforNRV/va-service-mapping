@@ -53,6 +53,23 @@
                         codeAddress();
                     }
                 });
+                
+                var spreadsheet = 'https://spreadsheets.google.com/feeds/list/1w8D1D_zCisaayQ5629nY7spJmzntJ5nRZKWD0x2kY44/1/public/values?alt=json';
+                $.get(spreadsheet, function(data){
+                    var rows = data.feed.entry;
+                    $.each(rows, function(){
+                        var category = this['gsx$category']['$t'];
+                        var program = this['gsx$program']['$t'];
+                        var address = this['gsx$address']['$t'];
+                        var lat = this['gsx$latitude']['$t'];
+                        var lng = this['gsx$longitude']['$t'];
+                        console.log(category);
+                        console.log(program);
+                        console.log(address);
+                        console.log(lat);
+                        console.log(lng);
+                    });
+                });
             });
         </script>
     </head>
