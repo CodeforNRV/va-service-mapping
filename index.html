@@ -23,6 +23,8 @@
         <script type="text/javascript">
             var geocoder;
             var map;
+            var mapData;
+            var categories;
             
             function initialize() {
                 var mapOptions = {
@@ -43,8 +45,28 @@
                         alert("Geocode was not successful for the following reason: " + status);
                     }
                 });
-              }
-              
+            }
+            
+            function changeMarkers(checkbox) {
+                console.log(checkbox.name);
+                console.log(checkbox.checked);
+                $.each(mapData, function(){
+                    if(this.category === checkbox.name) {
+                        if(checkbox.checked) {
+                            var position = new google.maps.LatLng(this.lat, this.lng);
+                            this.marker = new google.maps.Marker({
+                                position: position,
+                                map: map,
+                                title: 'Hello World!'
+                            });
+                        } else {
+                            this.marker.setMap(null);
+                            this.marker = null;
+                        }
+                    }
+                });
+            }
+            
             google.maps.event.addDomListener(window, 'load', initialize);
             
             $(function(){
@@ -54,20 +76,35 @@
                     }
                 });
                 
+                mapData = [];
+                categories = [];
+                
                 var spreadsheet = 'https://spreadsheets.google.com/feeds/list/1w8D1D_zCisaayQ5629nY7spJmzntJ5nRZKWD0x2kY44/1/public/values?alt=json';
                 $.get(spreadsheet, function(data){
                     var rows = data.feed.entry;
                     $.each(rows, function(){
-                        var category = this['gsx$category']['$t'];
+                        var category = this['gsx$category']['$t'].trim();
                         var program = this['gsx$program']['$t'];
                         var address = this['gsx$address']['$t'];
                         var lat = this['gsx$latitude']['$t'];
                         var lng = this['gsx$longitude']['$t'];
-                        console.log(category);
-                        console.log(program);
-                        console.log(address);
-                        console.log(lat);
-                        console.log(lng);
+                        
+                        mapData.push({
+                            category: category,
+                            program: program,
+                            address: address,
+                            lat: lat,
+                            lng: lng
+                        });
+                        
+                        if($.inArray(category, categories) === -1) {
+                            categories.push(category);
+                        }
+                    });
+                    
+                    console.log(categories);
+                    $.each(categories, function(){
+                        $('#categories').append('<input name="' + this + '" onclick="changeMarkers(this)" type="checkbox"> ' + this);
                     });
                 });
             });
@@ -94,6 +131,7 @@
                 <div class="col-xs-4">
                     <div id="table-of-contents">
                         <h4>Table of Contents</h4>
+                        <div id="categories"></div>
                     </div>
                 </div>
             </div>
