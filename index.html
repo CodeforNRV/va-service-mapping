@@ -25,6 +25,7 @@
             var map;
             var mapData;
             var categories;
+            var curInfoWindow;
             
             function initialize() {
                 var mapOptions = {
@@ -52,16 +53,43 @@
                 console.log(checkbox.checked);
                 $.each(mapData, function(){
                     if(this.category === checkbox.name) {
-                        if(checkbox.checked) {
+                        if(checkbox.checked && !this.marker) {
                             var position = new google.maps.LatLng(this.lat, this.lng);
-                            this.marker = new google.maps.Marker({
+                            var marker = new google.maps.Marker({
                                 position: position,
                                 map: map,
                                 title: 'Hello World!'
                             });
+                            this.marker = marker;
+                            
+                            var infoWindowContent = '<div id="row">' +
+                            '<div class="col-xs-12">' +
+                            '<h4>' + this.program + '</h4>' +
+                            '</div>' +
+                            '<div class="col-xs-4">'+
+                            '<b>Category</b>' +
+                            '</div>'+
+                            '<div class="col-xs-8">'+
+                            this.category +
+                            '</div>'+
+                            '</div>';
+                            
+                            var infoWindow = new google.maps.InfoWindow({
+                                content: infoWindowContent
+                            });
+                            
+                            google.maps.event.addListener(this.marker, 'click', function() {
+                                console.log('clicked');
+                                if(curInfoWindow) {
+                                    curInfoWindow.close();
+                                }
+                                curInfoWindow = infoWindow;
+                                infoWindow.open(map, marker);
+                            });
+                        } else if (checkbox.checked && this.marker) {
+                            this.marker.setMap(map);
                         } else {
                             this.marker.setMap(null);
-                            this.marker = null;
                         }
                     }
                 });
