@@ -24,7 +24,6 @@
             var geocoder;
             var map;
             var mapData;
-            var categories;
             var curInfoWindow;
             
             function initialize() {
@@ -102,7 +101,6 @@
                             });
                             
                             google.maps.event.addListener(this.marker, 'click', function() {
-                                console.log('clicked');
                                 if(curInfoWindow) {
                                     curInfoWindow.close();
                                 }
@@ -128,41 +126,42 @@
                 });
                 
                 mapData = [];
-                categories = [];
                 
-                var spreadsheet = 'https://spreadsheets.google.com/feeds/list/1w8D1D_zCisaayQ5629nY7spJmzntJ5nRZKWD0x2kY44/1/public/values?alt=json';
-                $.get(spreadsheet, function(data){
-                    var rows = data.feed.entry;
-                    console.log(rows[0]);
-                    $.each(rows, function(){
-                        var category = this['gsx$category']['$t'].trim();
+                for(var i=1; i<=3; i++) {
+                    var spreadsheet = 'https://spreadsheets.google.com/feeds/list/1w8D1D_zCisaayQ5629nY7spJmzntJ5nRZKWD0x2kY44/' + i +'/public/values?alt=json';
+                    $.get(spreadsheet, function(data){
+                        console.log(data);
+                        var categories = [];
+                        var rows = data.feed.entry;
+                        $.each(rows, function(){
+                            var category = this['gsx$category']['$t'].trim();
                         
-                        mapData.push({
-                            category: category,
-                            program: this['gsx$program']['$t'],
-                            address: this['gsx$address']['$t'],
-                            lat: this['gsx$latitude']['$t'],
-                            lng: this['gsx$longitude']['$t'],
-                            contactName: this['gsx$contactname']['$t'],
-                            phone: this['gsx$phone']['$t'],
-                            email: this['gsx$email']['$t'],
-                            website: this['gsx$website']['$t'],
-                            facebook: this['gsx$facebook']['$t'],
-                            numberOfMembers: this['gsx$numberofmembers']['$t'],
-                            focusArea: this['gsx$focusareas']['$t'],
-                            description: this['gsx$description']['$t']
+                            mapData.push({
+                                category: category,
+                                program: this['gsx$program']['$t'],
+                                address: this['gsx$address']['$t'],
+                                lat: this['gsx$latitude']['$t'],
+                                lng: this['gsx$longitude']['$t'],
+                                contactName: this['gsx$contactname']['$t'],
+                                phone: this['gsx$phone']['$t'],
+                                email: this['gsx$email']['$t'],
+                                website: this['gsx$website']['$t'],
+                                facebook: this['gsx$facebook']['$t'],
+                                numberOfMembers: this['gsx$numberofmembers']['$t'],
+                                focusArea: this['gsx$focusareas']['$t'],
+                                description: this['gsx$description']['$t']
+                            });
+                        
+                            if($.inArray(category, categories) === -1) {
+                                categories.push(category);
+                            }
                         });
                         
-                        if($.inArray(category, categories) === -1) {
-                            categories.push(category);
-                        }
+                        $.each(categories, function(){
+                            $('#categories').append('<input name="' + this + '" onclick="changeMarkers(this)" type="checkbox"> ' + this + '<br>');
+                        });
                     });
-                    
-                    console.log(categories);
-                    $.each(categories, function(){
-                        $('#categories').append('<input name="' + this + '" onclick="changeMarkers(this)" type="checkbox"> ' + this);
-                    });
-                });
+                }
             });
         </script>
     </head>
