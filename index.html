@@ -63,37 +63,7 @@
                             
                             var infoWindowContent = '<div class="row">' +
                             '<div class="col-xs-12"><h4>' + this.program + '</h4></div>' +
-                            '</div><div class="row">' +
-                            '<div class="col-xs-3"><b>Category</b></div>' +
-                            '<div class="col-xs-9">'+ this.category + '</div>' +
-                            '</div><div class="row">' +
-                            '<div class="col-xs-3"><b>Address</b></div>' +
-                            '<div class="col-xs-9">'+ this.address + '</div>' +
-                            '</div><div class="row">' +
-                            '<div class="col-xs-3"><b>Contact Name</b></div>' +
-                            '<div class="col-xs-9">'+ this.contactName + '</div>' +
-                            '</div><div class="row">' +
-                            '<div class="col-xs-3"><b>Phone</b></div>' +
-                            '<div class="col-xs-9">'+ this.phone + '</div>' +
-                            '</div><div class="row">' +
-                            '<div class="col-xs-3"><b>Email</b></div>' +
-                            '<div class="col-xs-9"><a href="mailto:'+ this.email + '">' + this.email + '</a></div>' +
-                            '</div><div class="row">' +
-                            '<div class="col-xs-3"><b>Website</b></div>' +
-                            '<div class="col-xs-9"><a href="'+ this.website + '">' + this.website + '</a></div>' +
-                            '</div><div class="row">' +
-                            '<div class="col-xs-3"><b>Facebook</b></div>' +
-                            '<div class="col-xs-9"><a href="'+ this.facebook + '">' + this.facebook + '</a></div>' +
-                            '</div><div class="row">' +
-                            '<div class="col-xs-3"><b>Number of Members</b></div>' +
-                            '<div class="col-xs-9">'+ this.numberOfMembers + '</div>' +
-                            '</div><div class="row">' +
-                            '<div class="col-xs-3"><b>Focus Area</b></div>' +
-                            '<div class="col-xs-9">'+ this.focusArea + '</div>' +
-                            '</div><div class="row">' +
-                            '<div class="col-xs-3"><b>Description</b></div>' +
-                            '<div class="col-xs-9">'+ this.description + '</div>' +
-                            '</div>';
+                            '</div>' + this.infoWindowContent;
                             
                             var infoWindow = new google.maps.InfoWindow({
                                 content: infoWindowContent,
@@ -129,24 +99,24 @@
                             category = this['gsx$category']['$t'].trim();
                         }
                         
-                        var program = 'No Program';
-                        if('gsx$program' in this) {
-                            description = this['gsx$program']['$t'];
-                        }
-                        
-                        var description = 'No Description';
-                        if('gsx$description' in this) {
-                            description = this['gsx$description']['$t'];
-                        }
-                        
-                        var curData = {};
+                        var curData = {
+                            category: category,
+                            infoWindowContent: ''
+                        };
                         for (var property in this) {
                             if(property == 'gsx$latitude') {
                                 curData['lat'] = this['gsx$latitude']['$t'];
                             } else if(property == 'gsx$longitude') {
                                 curData['lng'] = this['gsx$longitude']['$t'];
+                            } else if(property == 'gsx$program') {
+                                curData['program'] = this['gsx$program']['$t'];
                             } else if(property.indexOf('gsx$') === 0) {
-                                curData[property.substring(4)] = this[property]['$t'];
+                                var propName = property.substring(4);
+                                var propData = this[property]['$t'];
+                                curData.infoWindowContent += '<div class="row">' +
+                                '<div class="col-xs-3"><b>' + propName + '</b></div>' +
+                                '<div class="col-xs-9">'+ propData + '</div>' +
+                                '</div>';
                             }
                         }
                         mapData.push(curData);
