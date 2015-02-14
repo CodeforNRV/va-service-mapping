@@ -118,6 +118,49 @@
             
             google.maps.event.addDomListener(window, 'load', initialize);
             
+            var categories = [];
+            var sheetsLoaded = 0;
+            function getSheetData(sheetUrl) {
+                $.get(sheetUrl, function(data){
+                    var rows = data.feed.entry;
+                    $.each(rows, function(){
+                        var category = this['title']['$t'];
+                        if('gsx$category' in this) {
+                            category = this['gsx$category']['$t'].trim();
+                        }
+                        
+                        var program = 'No Program';
+                        if('gsx$program' in this) {
+                            description = this['gsx$program']['$t'];
+                        }
+                        
+                        var description = 'No Description';
+                        if('gsx$description' in this) {
+                            description = this['gsx$description']['$t'];
+                        }
+                        
+                        var curData = {};
+                        for (var property in this) {
+                            if(property == 'gsx$latitude') {
+                                curData['lat'] = this['gsx$latitude']['$t'];
+                            } else if(property == 'gsx$longitude') {
+                                curData['lng'] = this['gsx$longitude']['$t'];
+                            } else if(property.indexOf('gsx$') === 0) {
+                                curData[property.substring(4)] = this[property]['$t'];
+                            }
+                        }
+                        mapData.push(curData);
+                    
+                        if($.inArray(category, categories) === -1) {
+                            categories.push(category);
+                        }
+                    });
+                    
+                    sheetsLoaded += 1;
+                    console.log(sheetsLoaded);
+                });
+            }
+            
             $(function(){
                 $('#address').keyup(function(e){
                     if(e.keyCode == 13) {
@@ -126,42 +169,29 @@
                 });
                 
                 mapData = [];
-                
-                for(var i=1; i<=3; i++) {
-                    var spreadsheet = 'https://spreadsheets.google.com/feeds/list/1w8D1D_zCisaayQ5629nY7spJmzntJ5nRZKWD0x2kY44/' + i +'/public/values?alt=json';
-                    $.get(spreadsheet, function(data){
-                        console.log(data);
-                        var categories = [];
-                        var rows = data.feed.entry;
-                        $.each(rows, function(){
-                            var category = this['gsx$category']['$t'].trim();
-                        
-                            mapData.push({
-                                category: category,
-                                program: this['gsx$program']['$t'],
-                                address: this['gsx$address']['$t'],
-                                lat: this['gsx$latitude']['$t'],
-                                lng: this['gsx$longitude']['$t'],
-                                contactName: this['gsx$contactname']['$t'],
-                                phone: this['gsx$phone']['$t'],
-                                email: this['gsx$email']['$t'],
-                                website: this['gsx$website']['$t'],
-                                facebook: this['gsx$facebook']['$t'],
-                                numberOfMembers: this['gsx$numberofmembers']['$t'],
-                                focusArea: this['gsx$focusareas']['$t'],
-                                description: this['gsx$description']['$t']
-                            });
-                        
-                            if($.inArray(category, categories) === -1) {
-                                categories.push(category);
-                            }
-                        });
-                        
+                var sheetCount = 0;
+                var spreadsheet = 'https://spreadsheets.google.com/feeds/worksheets/1w8D1D_zCisaayQ5629nY7spJmzntJ5nRZKWD0x2kY44/public/values?alt=json';
+                $.get(spreadsheet, function(data){
+                    sheetCount = data.feed.entry.length;
+                    console.log(sheetCount);
+                    
+                    for(var i=1; i<=sheetCount; i++) {
+                        spreadsheet = 'https://spreadsheets.google.com/feeds/list/1w8D1D_zCisaayQ5629nY7spJmzntJ5nRZKWD0x2kY44/' + i +'/public/values?alt=json';
+                        getSheetData(spreadsheet);
+                    }
+                    
+                    var interval = setInterval(function(){
+                        categories.sort();
+                        $('#categories').empty();
                         $.each(categories, function(){
                             $('#categories').append('<input name="' + this + '" onclick="changeMarkers(this)" type="checkbox"> ' + this + '<br>');
                         });
-                    });
-                }
+                        
+                        if(sheetsLoaded === sheetCount) {
+                            clearInterval(interval);
+                        }
+                    }, 500);
+                });
             });
         </script>
     </head>
