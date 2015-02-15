@@ -40,7 +40,12 @@
                 "sitephone": "Site Phone",
                 "veteranindicator": "Veteran Indicator",
                 "volcnt": "Vol Count",
-                "areasserved": "Areas Served"
+                "areasserved": "Areas Served",
+                "programdescription": "Program Description",
+                "primaryfocusarea": "Primary Focus Area",
+                "congressionaldistrict": "Congressional District",
+                "programdirectorname": "Program Director Name",
+                "sponsororganization": "Sponsor Organization"
             };
             
             function initialize() {
@@ -74,7 +79,7 @@
                             var marker = new google.maps.Marker({
                                 position: position,
                                 map: map,
-                                title: 'Hello World!'
+                                title: this.program
                             });
                             this.marker = marker;
                             
@@ -134,11 +139,13 @@
                                 } else {
                                     propName = propName.charAt(0).toUpperCase() + propName.slice(1);
                                 }
-                                var propData = this[property]['$t'];
-                                curData.infoWindowContent += '<div class="row">' +
-                                '<div class="col-xs-3"><b>' + propName + '</b></div>' +
-                                '<div class="col-xs-9">'+ propData + '</div>' +
-                                '</div>';
+                                var propData = this[property]['$t'].trim();
+                                if(propData !== "") {
+                                    curData.infoWindowContent += '<div class="row">' +
+                                        '<div class="col-xs-3"><b>' + propName + '</b></div>' +
+                                        '<div class="col-xs-9">'+ propData + '</div>' +
+                                        '</div><hr>';
+                                }
                             }
                         }
                         mapData.push(curData);
@@ -172,15 +179,16 @@
                         getSheetData(spreadsheet);
                     }
                     
-                    var interval = setInterval(function(){
-                        categories.sort();
-                        $('#categories').empty();
-                        $.each(categories, function(){
-                            $('#categories').append('<input name="' + this + '" onclick="changeMarkers(this)" type="checkbox"> ' + this + '<br>');
-                        });
-                        
+                    var interval = setInterval(function() {
+                        var percentage = (sheetsLoaded / sheetCount) * 100;
+                        $('#table-of-contents .progress-bar').width(percentage + '%');
                         if(sheetsLoaded === sheetCount) {
                             clearInterval(interval);
+                            categories.sort();
+                            $('#categories').empty();
+                            $.each(categories, function(){
+                                $('#categories').append('<input name="' + this + '" onclick="changeMarkers(this)" type="checkbox"> ' + this + '<br>');
+                            });
                         }
                     }, 500);
                 });
@@ -208,7 +216,12 @@
                 <div class="col-xs-4">
                     <div id="table-of-contents">
                         <h4>Table of Contents</h4>
-                        <div id="categories"></div>
+                        <div id="categories">
+                            <div class="text-center">Loading</div>
+                            <div class="progress">
+                                <div class="progress-bar" role="progressbar" style="width: 0%;"></div>
+                            </div>
+                        </div>
                     </div>
                 </div>
             </div>
