@@ -23,7 +23,7 @@
         <script type="text/javascript">
             var geocoder;
             var map;
-            var mapData;
+            var contents;
             var curInfoWindow;
             
             var propNames = {
@@ -45,7 +45,11 @@
                 "primaryfocusarea": "Primary Focus Area",
                 "congressionaldistrict": "Congressional District",
                 "programdirectorname": "Program Director Name",
-                "sponsororganization": "Sponsor Organization"
+                "sponsororganization": "Sponsor Organization",
+                "vistaassignmentdescription": "Vista Assignment Description"
+            };
+            
+            var markers = {
             };
             
             function initialize() {
@@ -72,57 +76,75 @@
             function changeMarkers(checkbox) {
                 console.log(checkbox.name);
                 console.log(checkbox.checked);
-                $.each(mapData, function(){
-                    if(this.category === checkbox.name) {
-                        if(checkbox.checked && !this.marker) {
-                            var position = new google.maps.LatLng(this.lat, this.lng);
-                            var marker = new google.maps.Marker({
-                                position: position,
-                                map: map,
-                                title: this.program
-                            });
-                            this.marker = marker;
-                            
-                            var infoWindowContent = '<div class="row">' +
-                            '<div class="col-xs-12"><h4>' + this.program + '</h4></div>' +
-                            '</div>' + this.infoWindowContent;
-                            
-                            var infoWindow = new google.maps.InfoWindow({
-                                content: infoWindowContent,
-                                maxWidth: 550
-                            });
-                            
-                            google.maps.event.addListener(this.marker, 'click', function() {
-                                if(curInfoWindow) {
-                                    curInfoWindow.close();
-                                }
-                                curInfoWindow = infoWindow;
-                                infoWindow.open(map, marker);
-                            });
-                        } else if (checkbox.checked && this.marker) {
-                            this.marker.setMap(map);
-                        } else {
-                            this.marker.setMap(null);
+                
+                var sheet;
+                for(var i=0; i<contents.length; i++) {
+                    if(contents[i].title === checkbox.name) {
+                        sheet = contents[i];
+                    }
+                }
+                
+                if(!sheet.data) {
+                    getSheetData(sheet, showData, checkbox.checked);
+                } else {
+                    showData(sheet, checkbox.checked);
+                }
+            }
+            
+            function showData(sheet, visible) {
+                $.each(sheet.data, function(){
+                    if(visible && !this.marker) {
+                        var position = new google.maps.LatLng(this.lat, this.lng);
+                        var icon;
+                        if(this.title in markers) {
+                            icon = {
+                                url: markers[this.title]
+                            };
                         }
+                        var marker = new google.maps.Marker({
+                            position: position,
+                            map: map,
+                            title: this.program,
+                            icon: icon
+                        });
+                        this.marker = marker;
+                        
+                        var infoWindowContent = '<div class="row">' +
+                        '<div class="col-xs-12"><h4>' + this.program + '</h4></div>' +
+                        '</div>' + this.infoWindowContent;
+                        
+                        var infoWindow = new google.maps.InfoWindow({
+                            content: infoWindowContent,
+                            maxWidth: 550
+                        });
+                        
+                        google.maps.event.addListener(this.marker, 'click', function() {
+                            if(curInfoWindow) {
+                                curInfoWindow.close();
+                            }
+                            curInfoWindow = infoWindow;
+                            infoWindow.open(map, marker);
+                        });
+                    } else if (visible && this.marker) {
+                        this.marker.setMap(map);
+                    } else {
+                        this.marker.setMap(null);
                     }
                 });
             }
             
             google.maps.event.addDomListener(window, 'load', initialize);
             
-            var categories = [];
+            var titles = [];
             var sheetsLoaded = 0;
-            function getSheetData(sheetUrl) {
-                $.get(sheetUrl, function(data){
+            function getSheetData(sheet, callback, visible) {
+                sheet.data = [];
+                $.get(sheet.url, function(data){
                     var rows = data.feed.entry;
+                    var title = data.feed['title']['$t'].trim();
                     $.each(rows, function(){
-                        var category = this['title']['$t'];
-                        if('gsx$category' in this) {
-                            category = this['gsx$category']['$t'].trim();
-                        }
-                        
                         var curData = {
-                            category: category,
+                            title: title,
                             infoWindowContent: ''
                         };
                         for (var property in this) {
@@ -148,15 +170,10 @@
                                 }
                             }
                         }
-                        mapData.push(curData);
-                    
-                        if($.inArray(category, categories) === -1) {
-                            categories.push(category);
-                        }
+                        sheet.data.push(curData);
                     });
                     
-                    sheetsLoaded += 1;
-                    console.log(sheetsLoaded);
+                    callback(sheet, visible);
                 });
             }
             
@@ -168,29 +185,29 @@
                 });
                 
                 mapData = [];
+                contents = [];
                 var sheetCount = 0;
-                var spreadsheet = 'https://spreadsheets.google.com/feeds/worksheets/1w8D1D_zCisaayQ5629nY7spJmzntJ5nRZKWD0x2kY44/public/values?alt=json';
-                $.get(spreadsheet, function(data){
+                var urlRoot = 'https://spreadsheets.google.com/feeds/';
+                var sheetId = '1w8D1D_zCisaayQ5629nY7spJmzntJ5nRZKWD0x2kY44';
+                var urlEnd = '/public/values?alt=json';
+                var sheetUrl = urlRoot + 'worksheets/' + sheetId + urlEnd;
+                $.get(sheetUrl, function(data){
                     sheetCount = data.feed.entry.length;
-                    console.log(sheetCount);
                     
-                    for(var i=1; i<=sheetCount; i++) {
-                        spreadsheet = 'https://spreadsheets.google.com/feeds/list/1w8D1D_zCisaayQ5629nY7spJmzntJ5nRZKWD0x2kY44/' + i +'/public/values?alt=json';
-                        getSheetData(spreadsheet);
+                    for(var i=0; i<sheetCount; i++) {
+                        var title = data.feed.entry[i]['title']['$t'].trim();
+                        titles.push(title);
+                        contents.push({
+                            title: title,
+                            url: urlRoot + 'list/' + sheetId + '/' + (i+1) + urlEnd
+                        });
                     }
                     
-                    var interval = setInterval(function() {
-                        var percentage = (sheetsLoaded / sheetCount) * 100;
-                        $('#table-of-contents .progress-bar').width(percentage + '%');
-                        if(sheetsLoaded === sheetCount) {
-                            clearInterval(interval);
-                            categories.sort();
-                            $('#categories').empty();
-                            $.each(categories, function(){
-                                $('#categories').append('<input name="' + this + '" onclick="changeMarkers(this)" type="checkbox"> ' + this + '<br>');
-                            });
-                        }
-                    }, 500);
+                    titles.sort();
+                    $('#titles').empty();
+                    $.each(titles, function(){
+                        $('#titles').append('<input name="' + this + '" onclick="changeMarkers(this)" type="checkbox"> ' + this + '<br>');
+                    });
                 });
             });
         </script>
@@ -216,7 +233,7 @@
                 <div class="col-xs-4">
                     <div id="table-of-contents">
                         <h4>Table of Contents</h4>
-                        <div id="categories">
+                        <div id="titles">
                             <div class="text-center">Loading</div>
                             <div class="progress">
                                 <div class="progress-bar" role="progressbar" style="width: 0%;"></div>
