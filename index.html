@@ -49,8 +49,7 @@
                 "vistaassignmentdescription": "Vista Assignment Description"
             };
             
-            var markers = {
-            };
+            var markerUrl = 'https://dcd9f34ab49dd08d26877db18c8db53bb56007a3-www.googledrive.com/host/0B8BleOByyHyIQTlmdDJGUENaNGs/';
             
             function initialize() {
                 var mapOptions = {
@@ -95,12 +94,9 @@
                 $.each(sheet.data, function(){
                     if(visible && !this.marker) {
                         var position = new google.maps.LatLng(this.lat, this.lng);
-                        var icon;
-                        if(this.title in markers) {
-                            icon = {
-                                url: markers[this.title]
-                            };
-                        }
+                        var icon = {
+                            url: markerUrl + this.title.replace(/\s+/g, '') + '.png'
+                        };
                         var marker = new google.maps.Marker({
                             position: position,
                             map: map,
