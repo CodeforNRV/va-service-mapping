@@ -203,7 +203,6 @@
                         });
                     }
                     
-                    titles.sort();
                     $('#titles').empty();
                     $.each(titles, function(){
                         $('#titles').append('<input name="' + this + '" onclick="changeMarkers(this)" type="checkbox"> ' + this + '<br>');
