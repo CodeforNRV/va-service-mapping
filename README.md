@@ -17,7 +17,7 @@ Users authorized by VDSS may edit the data in the Google Spreadsheet. Changes to
 The spreadsheet contains a number of sheets, accessible through the tabs at the bottom of the window. The order and title of these sheets determines how the Table of Contents on the website is created.
 
 ### Required Columns
-Each sheet has four required columns: `Program`, `Address`, `Latitude`, and `Longitude`. The `Program` column is used to title to the info window that pops up on the map when an icon is clicked. The `Address` column must contain the full street address, including city, state, and zip code. The `Latitude` and `Longitude` columns must be created manually (with the headings spelled correctly), but those cells in each row will be filled in automatically.
+Each sheet has four required columns: `Program`, `Address`, `Latitude`, and `Longitude`. The `Program` column is used to title the info window that pops up on the map when an icon is clicked. The `Address` column must contain the full street address, including city, state, and zip code. The `Latitude` and `Longitude` columns must be created manually (with the headings spelled correctly), but those cells in each row will be filled in automatically.
 
 ### Optional Columns
 Any other column will be used to populate the info window that appears when an icon is clicked on the map.
