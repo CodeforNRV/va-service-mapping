@@ -23,7 +23,7 @@ Each sheet has four required columns: `Program`, `Address`, `Latitude`, and `Lon
 Any other column will be used to populate the info window that appears when an icon is clicked on the map.
 
 ### Adding Rows or Changing Addresses of Existing Rows
-When a new row is added or an address is changed, make sure a cells for `Latitude` and `Longitude` are blank. Once the address is correct, click `Geocoding` in the menu at the top, then click `Geocode Rows - Current Sheet`. The `Latitude` and `Longitude` fields should be filled in automatically.
+When a new row is added or an address is changed, make sure the cells for `Latitude` and `Longitude` are blank. Once the address is correct, click `Geocoding` in the menu at the top, then click `Geocode Rows - Current Sheet`. The `Latitude` and `Longitude` fields should be filled in automatically.
 
 ![](http://i.imgur.com/O72HjkQ.png)
 ![](http://i.imgur.com/tknMjpC.png)
